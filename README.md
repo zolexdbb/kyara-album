@@ -11,15 +11,20 @@ Un classeur en ligne pour suivre sa collection [Kyara](https://kyara.games) albu
 
 ## Importer sa collection
 
-1. Va sur [kyara.games](https://kyara.games) en étant connecté.
-2. Ouvre la console du navigateur (F12, onglet « Console »).
-3. Si Chrome affiche un avertissement sur le collage, tape `allow pasting` puis Entrée.
-4. Colle la ligne affichée dans la page (bouton « Copier la ligne ») puis Entrée.
-   Un fichier `kyara-collection.json` est téléchargé.
-5. Dans Kyara Albums, clique sur « Choisir le fichier… » et sélectionne-le.
+**Méthode conseillée : le favori « Exporter Kyara »**
 
-La ligne lit seulement ta collection sur kyara.games avec ta propre connexion
-et l'enregistre dans un fichier. Elle n'envoie rien ailleurs et ne modifie pas ton compte.
+1. Affiche la barre de favoris (`Ctrl+Maj+B`, ou `Cmd+Maj+B` sur Mac).
+2. Sur la page Kyara Albums, glisse le bouton « Exporter Kyara » dans la barre de favoris.
+3. Va sur [kyara.games](https://kyara.games) en étant connecté et clique sur ce favori.
+   Un fichier `kyara-collection.json` est téléchargé.
+4. Dans Kyara Albums, clique sur « Choisir le fichier… » et sélectionne-le.
+
+**Autre méthode : la console du navigateur.** La page indique le raccourci de chaque
+navigateur (Chrome, Edge, Firefox, Safari…) et la ligne à coller.
+
+Le favori comme la ligne de console lisent seulement ta collection sur kyara.games
+avec ta propre connexion et l'enregistrent dans un fichier. Rien n'est envoyé ailleurs
+et ton compte n'est pas modifié. Sur téléphone, fais l'export depuis un ordinateur.
 
 ## Mettre le site en ligne avec GitHub Pages
 

@@ -141,9 +141,26 @@ function importData(text){
 }
 $('file').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;f.text().then(importData);e.target.value=''});
 $('pasteBtn').addEventListener('click',()=>{const v=$('paste').value.trim();if(!v)return msg('La zone de texte est vide.','err');importData(v)});
-$('copySnip').addEventListener('click',async()=>{const txt=$('snip').textContent;
-  try{await navigator.clipboard.writeText(txt);msg('Ligne copiée. Colle-la dans la console de kyara.games.','ok')}
-  catch(e){const r=document.createRange();r.selectNodeContents($('snip'));const s=getSelection();s.removeAllRanges();s.addRange(r);msg('Ligne sélectionnée : fais Ctrl+C pour la copier.','ok')}});
+// Code d'export, partagé par le favori et par la console : lit la collection avec la session Kyara et la télécharge.
+const EXPORT=`(()=>{if(!/(^|\\.)kyara\\.games$/.test(location.hostname)){alert('Ouvre d\\'abord kyara.games, puis clique à nouveau sur ce favori.');return}fetch('/api/me/collection?lean=1',{headers:{authorization:'Bearer '+localStorage.kyara_token,'x-device-id':localStorage.kyara_device}}).then(r=>r.json()).then(d=>{if(!Array.isArray(d)){alert('Kyara ne donne pas ta collection : connecte-toi puis réessaie.');return}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:'application/json'}));a.download='kyara-collection.json';document.body.appendChild(a);a.click();a.remove();alert(d.length+' cartes exportées dans kyara-collection.json')}).catch(e=>alert('Erreur : '+e))})()`;
+const BM='javascript:'+encodeURIComponent(EXPORT);
+$('snip').textContent=EXPORT;
+const bm=$('bookmarklet');bm.href=BM;
+bm.addEventListener('click',e=>{e.preventDefault();msg('Ne clique pas ici : glisse ce bouton dans ta barre de favoris, puis utilise-le sur kyara.games.','err')});
+
+async function copy(txt,el,ok){
+  try{await navigator.clipboard.writeText(txt);msg(ok,'ok')}
+  catch(e){const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);msg('Texte sélectionné : fais Ctrl+C pour le copier.','ok')}
+}
+$('copySnip').addEventListener('click',()=>copy(EXPORT,$('snip'),'Ligne copiée. Colle-la dans la console de kyara.games.'));
+$('copyBm').addEventListener('click',()=>copy(BM,$('snip'),'Adresse du favori copiée. Colle-la comme adresse (URL) d\u2019un nouveau favori.'));
+
+// Met en avant le raccourci du navigateur utilisé.
+(()=>{const ua=navigator.userAgent;
+  const b=/Firefox\//.test(ua)?'firefox':/(Chrome|Chromium|Edg|OPR)\//.test(ua)?'chromium':/Safari\//.test(ua)?'safari':'other';
+  const li=document.querySelector(`#consoleKeys [data-b="${b}"]`);if(li)li.classList.add('mine');
+  $('consoleKey').textContent=b==='other'?'':'ton navigateur est mis en évidence.';
+})();
 $('resetBtn').addEventListener('click',()=>{$('resetConfirm').hidden=false});
 $('resetNo').addEventListener('click',()=>{$('resetConfirm').hidden=true});
 $('resetYes').addEventListener('click',()=>{owned=new Map();lastImport=null;save();$('resetConfirm').hidden=true;render();msg('Toutes les cartes sont décochées.','ok')});

@@ -1,0 +1,32 @@
+name: Mise à jour du catalogue
+
+on:
+  schedule:
+    - cron: "0 5 * * *"   # tous les jours à 5 h (UTC)
+  workflow_dispatch:       # bouton « Run workflow » dans l'onglet Actions
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 tools/update_catalog.py
+      - name: Commit si le catalogue a changé
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          # la date change chaque jour : on ne commit que si les cartes ont changé
+          strip() { sed -E 's/"d":"[0-9-]+",//'; }
+          if ! cmp -s <(git show HEAD:data/catalog.js | strip) <(strip < data/catalog.js); then
+            git add data/catalog.js
+            git commit -m "Catalogue Kyara mis à jour"
+            git push
+          else
+            echo "Aucune nouvelle carte."
+          fi

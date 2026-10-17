@@ -28,14 +28,36 @@
   <details class="import" id="importBox">
     <summary><span>Importer ma collection depuis Kyara</span><span class="hint" id="importHint">Aucun import pour l'instant</span></summary>
     <div class="body">
-      <ol>
-        <li>Ouvre <a href="https://kyara.games/collection" target="_blank" rel="noopener">kyara.games</a> en étant connecté à ton compte.</li>
-        <li>Ouvre la console du navigateur (F12, onglet « Console »), colle la ligne ci-dessous et appuie sur Entrée. Si le navigateur bloque le collage, tape d'abord <code>allow pasting</code>.</li>
-        <li>Un fichier <code>kyara-collection.json</code> est téléchargé : choisis-le ci-dessous, ou colle son contenu dans la zone de texte.</li>
-      </ol>
-      <pre class="snip" id="snip">fetch('/api/me/collection?lean=1',{headers:{authorization:'Bearer '+localStorage.kyara_token,'x-device-id':localStorage.kyara_device}}).then(r=>r.json()).then(d=>{if(!Array.isArray(d))return console.log('Erreur',d);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:'application/json'}));a.download='kyara-collection.json';a.click();console.log(d.length+' cartes exportées')})</pre>
+      <div class="method">
+        <h2>Méthode 1 · le favori magique <span class="tag-rec">conseillée</span></h2>
+        <ol>
+          <li>Affiche ta barre de favoris : <kbd>Ctrl</kbd>+<kbd>Maj</kbd>+<kbd>B</kbd> (sur Mac <kbd>⌘</kbd>+<kbd>Maj</kbd>+<kbd>B</kbd>).</li>
+          <li>Glisse ce bouton dans la barre de favoris : <a class="btn small primary bm" id="bookmarklet" href="#">Exporter Kyara</a></li>
+          <li>Va sur <a href="https://kyara.games/collection" target="_blank" rel="noopener">kyara.games</a> en étant connecté, puis clique sur le favori « Exporter Kyara ». Un fichier <code>kyara-collection.json</code> se télécharge.</li>
+          <li>Reviens ici et choisis ce fichier avec le bouton « Choisir le fichier… » plus bas.</li>
+        </ol>
+        <p class="note">Le glisser ne marche pas ? Fais un clic droit sur la barre de favoris, « Ajouter une page » ou « Ajouter un favori », nomme-le « Exporter Kyara » et colle comme adresse le contenu du bouton « Copier l'adresse du favori ». <button class="btn small" id="copyBm" type="button">Copier l'adresse du favori</button></p>
+      </div>
+      <details class="method alt">
+        <summary><h2>Méthode 2 · par la console du navigateur</h2></summary>
+        <ol>
+          <li>Va sur <a href="https://kyara.games/collection" target="_blank" rel="noopener">kyara.games</a> en étant connecté.</li>
+          <li>Ouvre la console : <span id="consoleKey"></span>
+            <ul class="keys" id="consoleKeys">
+              <li data-b="chromium"><b>Chrome, Edge, Brave, Opera, Vivaldi</b> : <kbd>Ctrl</kbd>+<kbd>Maj</kbd>+<kbd>J</kbd> · Mac <kbd>⌘</kbd>+<kbd>⌥</kbd>+<kbd>J</kbd></li>
+              <li data-b="firefox"><b>Firefox</b> : <kbd>Ctrl</kbd>+<kbd>Maj</kbd>+<kbd>K</kbd> · Mac <kbd>⌘</kbd>+<kbd>⌥</kbd>+<kbd>K</kbd></li>
+              <li data-b="safari"><b>Safari</b> : active d'abord Réglages → Avancés → « Afficher les fonctionnalités pour les développeurs web », puis <kbd>⌘</kbd>+<kbd>⌥</kbd>+<kbd>C</kbd></li>
+              <li data-b="other"><b>Partout ailleurs</b> : clic droit sur la page → « Inspecter » (ou « Examiner l'élément »), puis l'onglet « Console »</li>
+            </ul>
+          </li>
+          <li>Colle la ligne ci-dessous et appuie sur Entrée. Si le navigateur affiche un avertissement sur le collage, tape à la main ce qu'il demande (<code>allow pasting</code> ou <code>autoriser le collage</code>), Entrée, puis colle à nouveau.</li>
+          <li>Choisis le fichier <code>kyara-collection.json</code> téléchargé avec le bouton ci-dessous.</li>
+        </ol>
+        <pre class="snip" id="snip"></pre>
+        <div class="row"><button class="btn small" id="copySnip" type="button">Copier la ligne</button></div>
+      </details>
+      <p class="note">Sur téléphone, ni la console ni les favoris de ce type ne sont pratiques : fais l'export sur un ordinateur, puis envoie-toi le fichier.</p>
       <div class="row">
-        <button class="btn small" id="copySnip" type="button">Copier la ligne</button>
         <label class="btn small primary" for="file">Choisir le fichier…</label>
         <input type="file" id="file" accept=".json,application/json" hidden>
       </div>

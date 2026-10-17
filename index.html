@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Suis ta collection Kyara album par album : coche tes cartes, trie par cartes manquantes, importe ta collection.">
+<title>Kyara Albums</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Kyara Albums<small>Coche tes cartes, album par album.</small></h1>
+    <div class="stats">
+      <div class="stat"><b id="sOwned">0</b><span>cartes / <span id="sTotal" class="num"></span></span></div>
+      <div class="stat"><b id="sPct">0 %</b><span>du catalogue</span></div>
+      <div class="stat"><b id="sDone">0</b><span>albums complets</span></div>
+      <div class="stat"><b id="sStarted">0</b><span>albums commencés</span></div>
+    </div>
+  </header>
+  <div class="bigbar"><i id="bigbar" style="width:0"></i></div>
+
+  <details class="import" id="importBox">
+    <summary><span>Importer ma collection depuis Kyara</span><span class="hint" id="importHint">Aucun import pour l'instant</span></summary>
+    <div class="body">
+      <ol>
+        <li>Ouvre <a href="https://kyara.games/collection" target="_blank" rel="noopener">kyara.games</a> en étant connecté à ton compte.</li>
+        <li>Ouvre la console du navigateur (F12, onglet « Console »), colle la ligne ci-dessous et appuie sur Entrée. Si le navigateur bloque le collage, tape d'abord <code>allow pasting</code>.</li>
+        <li>Un fichier <code>kyara-collection.json</code> est téléchargé : choisis-le ci-dessous, ou colle son contenu dans la zone de texte.</li>
+      </ol>
+      <pre class="snip" id="snip">fetch('/api/me/collection?lean=1',{headers:{authorization:'Bearer '+localStorage.kyara_token,'x-device-id':localStorage.kyara_device}}).then(r=>r.json()).then(d=>{if(!Array.isArray(d))return console.log('Erreur',d);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:'application/json'}));a.download='kyara-collection.json';a.click();console.log(d.length+' cartes exportées')})</pre>
+      <div class="row">
+        <button class="btn small" id="copySnip" type="button">Copier la ligne</button>
+        <label class="btn small primary" for="file">Choisir le fichier…</label>
+        <input type="file" id="file" accept=".json,application/json" hidden>
+      </div>
+      <textarea id="paste" placeholder="…ou colle ici le contenu du fichier JSON"></textarea>
+      <div class="row"><button class="btn small" id="pasteBtn" type="button">Importer le texte collé</button>
+        <button class="btn small" id="resetBtn" type="button">Tout décocher</button>
+        <span id="resetConfirm" hidden>Sûr ? <button class="btn small" id="resetYes" type="button">Oui, tout décocher</button> <button class="btn small" id="resetNo" type="button">Annuler</button></span>
+      </div>
+      <div class="msg" id="msg" role="status"></div>
+      <p style="margin:0;font-size:13px;color:var(--muted)">L'import remplace tes coches par le contenu de ta collection Kyara. Tes coches sont enregistrées dans ce navigateur uniquement ; réimporte depuis Kyara pour les retrouver ailleurs.</p>
+    </div>
+  </details>
+
+  <div class="tools">
+    <input type="search" id="q" placeholder="Chercher un album ou un personnage" aria-label="Recherche">
+    <select id="sort" aria-label="Trier les albums">
+      <option value="missAsc">Manquantes (moins → plus)</option>
+      <option value="missDesc">Manquantes (plus → moins)</option>
+      <option value="sizeDesc">Taille de l'album (grand → petit)</option>
+      <option value="sizeAsc">Taille de l'album (petit → grand)</option>
+      <option value="pctDesc">% complété</option>
+      <option value="name">Nom (A → Z)</option>
+    </select>
+    <select id="status" aria-label="Filtrer par état">
+      <option value="all">Tous les albums</option>
+      <option value="todo">Incomplets</option>
+      <option value="started">Commencés, incomplets</option>
+      <option value="none">Pas commencés</option>
+      <option value="done">Complets</option>
+    </select>
+    <label class="row" style="gap:6px;font-size:14px"><input type="checkbox" id="onlyMiss"> Cartes manquantes seulement</label>
+    <div class="chips" id="chips" aria-label="Filtrer par rareté"></div>
+  </div>
+  <div class="count" id="count"></div>
+  <ul class="albums" id="list"></ul>
+  <div class="more"><button class="btn" id="moreBtn" type="button" hidden></button></div>
+  <p class="foot">Catalogue de Kyara au <span id="fDate"></span> : <span id="fTotal"></span> cartes, <span id="fAlb"></span> albums. Raretés : C commune, U peu commune, R rare, E épique, L légendaire, M mythique.</p>
+</div>
+
+<script src="data/catalog.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

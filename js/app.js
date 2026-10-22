@@ -53,10 +53,11 @@ function renderBody(a,q,cardHit){
 
 function render(){
   const q=$('q').value.trim().toLowerCase();
-  const st=$('status').value,sort=$('sort').value;
+  const st=$('status').value,sort=$('sort').value,minSize=+$('minSize').value;
   let rows=[];
   for(const a of albums){
     const o=ownedIn(a),t=a.cards.length,m=t-o;
+    if(t<minSize)continue;
     if(st==='todo'&&m===0)continue;
     if(st==='done'&&m!==0)continue;
     if(st==='none'&&o!==0)continue;
@@ -117,7 +118,7 @@ chips.addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)retur
   rarOn.has(r)?rarOn.delete(r):rarOn.add(r);b.setAttribute('aria-pressed',rarOn.has(r));render()});
 
 let t;$('q').addEventListener('input',()=>{clearTimeout(t);t=setTimeout(()=>{limit=60;render()},150)});
-['sort','status','onlyMiss'].forEach(id=>$(id).addEventListener('change',()=>{limit=60;render()}));
+['sort','status','minSize','onlyMiss'].forEach(id=>$(id).addEventListener('change',()=>{limit=60;render()}));
 $('moreBtn').addEventListener('click',()=>{limit+=100;render()});
 
 function msg(text,kind){const m=$('msg');m.textContent=text;m.className='msg '+(kind||'')}

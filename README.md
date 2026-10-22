@@ -5,7 +5,7 @@ Un classeur en ligne pour suivre sa collection [Kyara](https://kyara.games) albu
 - Les 1 155 albums (un par univers) et leurs 6 736 cartes
 - Cases à cocher pour chaque carte, enregistrées dans ton navigateur
 - Tri par cartes manquantes, taille de l'album, % complété ou nom
-- Filtres par état de l'album, par rareté, et « cartes manquantes seulement »
+- Filtres par état de l'album, par taille minimale (ex. 5 cartes et plus), par rareté, et « cartes manquantes seulement »
 - Recherche par album ou par personnage
 - Import de ta collection Kyara en un clic
 

@@ -20,6 +20,8 @@ const rarOn=new Set([0,1,2,3,4,5]);
 let limit=60;
 
 function ownedIn(a){let n=0;for(const c of a.cards)if(owned.has(c.id))n++;return n}
+// cartes possédées / total de l'album, en ne comptant que les raretés sélectionnées
+function countIn(a){let o=0,t=0;for(const c of a.cards)if(rarOn.has(c.r)){t++;if(owned.has(c.id))o++}return{o,t}}
 
 function stats(){
   let done=0,started=0;
@@ -51,13 +53,34 @@ function renderBody(a,q,cardHit){
   return `<div class="abody"><div class="row"><button class="btn small" type="button" data-all="${a.i}">Tout cocher</button><button class="btn small" type="button" data-none="${a.i}">Tout décocher</button></div>${items?`<div class="cards">${items}</div>`:'<div class="empty">Aucune carte avec ces filtres.</div>'}</div>`;
 }
 
+// vue « Toutes les cartes » : une seule grille, sans regroupement par album
+function renderCards(q){
+  const onlyMiss=$('onlyMiss').checked,minSize=+$('minSize').value;
+  const list=cards.filter(c=>rarOn.has(c.r)&&(!onlyMiss||!owned.has(c.id))&&albums[c.s].cards.length>=minSize&&(!q||c.lname.includes(q)||albums[c.s].lname.includes(q)));
+  list.sort((x,y)=>y.r-x.r||albums[x.s].name.localeCompare(albums[y.s].name,'fr')||x.num-y.num);
+  const miss=list.reduce((n,c)=>n+!owned.has(c.id),0);
+  const rarTxt=rarOn.size<RAR.length?' '+[...rarOn].sort().map(r=>RAR[r]).join(', '):'';
+  $('count').textContent=fmt(list.length)+' carte'+(list.length>1?'s':'')+rarTxt+' · '+fmt(miss)+' manquante'+(miss>1?'s':'');
+  const shown=list.slice(0,limit*5);
+  $('list').innerHTML=shown.length?`<li class="flat"><div class="cards">${shown.map(c=>{const have=owned.has(c.id),qt=owned.get(c.id);
+    return `<label class="card${have?' have':''}" data-r="${c.r}"><input type="checkbox" data-id="${c.id}"${have?' checked':''}><span class="cn">${hl(c.name,q)}<span class="cno">${hl(albums[c.s].name,q)} · #${String(c.num).padStart(4,'0')}${qt>1?` · <span class="qty">×${qt}</span>`:''}</span></span><span class="cr">${RAR[c.r]}</span></label>`}).join('')}</div></li>`:'<li class="empty">Aucune carte ne correspond.</li>';
+  const left=list.length-shown.length;
+  $('moreBtn').hidden=left<=0;
+  $('moreBtn').textContent='Afficher plus · '+fmt(left)+' cartes restantes';
+  stats();
+}
+
 function render(){
   const q=$('q').value.trim().toLowerCase();
+  const cardView=$('view').value==='cards';
+  $('sort').hidden=$('status').hidden=cardView;
+  if(cardView)return renderCards(q);
   const st=$('status').value,sort=$('sort').value,minSize=+$('minSize').value;
   let rows=[];
   for(const a of albums){
-    const o=ownedIn(a),t=a.cards.length,m=t-o;
-    if(t<minSize)continue;
+    if(a.cards.length<minSize)continue;
+    const {o,t}=countIn(a),m=t-o;
+    if(!t)continue;
     if(st==='todo'&&m===0)continue;
     if(st==='done'&&m!==0)continue;
     if(st==='none'&&o!==0)continue;
@@ -75,7 +98,8 @@ function render(){
     name:(x,y)=>x.a.name.localeCompare(y.a.name,'fr')
   }[sort];
   rows.sort((x,y)=>cmp(x,y)||x.a.name.localeCompare(y.a.name,'fr'));
-  $('count').textContent=fmt(rows.length)+' album'+(rows.length>1?'s':'')+' · '+fmt(rows.reduce((s,r)=>s+r.m,0))+' cartes manquantes dans cette sélection';
+  const rarTxt=rarOn.size<RAR.length?' ('+[...rarOn].sort().map(r=>RAR[r]).join(', ')+')':'';
+  $('count').textContent=fmt(rows.length)+' album'+(rows.length>1?'s':'')+' · '+fmt(rows.reduce((s,r)=>s+r.m,0))+' cartes manquantes'+rarTxt+' dans cette sélection';
   const shown=rows.slice(0,limit);
   $('list').innerHTML=shown.length?shown.map(({a,o,t,m,cardHit})=>{
     const isOpen=open.has(a.i)||cardHit;
@@ -105,7 +129,9 @@ $('list').addEventListener('change',e=>{
   e.target.closest('.card').classList.toggle('have',e.target.checked);
   save();
   // met à jour l'en-tête de l'album sans tout redessiner (garde la carte sous le doigt)
-  const li=e.target.closest('.album'),a=albums[+li.dataset.a],o=ownedIn(a),t=a.cards.length;
+  const li=e.target.closest('.album');
+  if(!li)return stats();
+  const a=albums[+li.dataset.a],{o,t}=countIn(a);
   li.querySelector('.ameta').innerHTML=`<span><b class="num">${o}</b> / <span class="num">${t}</span></span><span class="miss">manque <b class="num">${t-o}</b></span>`;
   li.querySelector('.pbar i').style.width=(o/t*100)+'%';
   li.classList.toggle('done',o===t);
@@ -113,12 +139,19 @@ $('list').addEventListener('change',e=>{
 });
 
 const chips=$('chips');
-chips.innerHTML=RAR.map((r,i)=>`<button type="button" class="chip" data-r="${i}" aria-pressed="true" title="Afficher les cartes ${r}">${r}</button>`).join('');
-chips.addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;const r=+b.dataset.r;
-  rarOn.has(r)?rarOn.delete(r):rarOn.add(r);b.setAttribute('aria-pressed',rarOn.has(r));render()});
+chips.innerHTML=`<button type="button" class="chip all" data-r="all" aria-pressed="true" title="Toutes les raretés">Tout</button>`+RAR.map((r,i)=>`<button type="button" class="chip" data-r="${i}" aria-pressed="true" title="Cartes ${r}">${r}</button>`).join('');
+// quand toutes les raretés sont affichées, un clic n'en garde qu'une ; ensuite chaque clic en ajoute ou en retire une
+chips.addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;
+  if(b.dataset.r==='all')RAR.forEach((_,i)=>rarOn.add(i));
+  else{const r=+b.dataset.r;
+    if(rarOn.size===RAR.length){rarOn.clear();rarOn.add(r)}
+    else if(rarOn.has(r)){rarOn.delete(r);if(!rarOn.size)RAR.forEach((_,i)=>rarOn.add(i))}
+    else rarOn.add(r)}
+  chips.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.r==='all'?rarOn.size===RAR.length:rarOn.has(+c.dataset.r)));
+  limit=60;render()});
 
 let t;$('q').addEventListener('input',()=>{clearTimeout(t);t=setTimeout(()=>{limit=60;render()},150)});
-['sort','status','minSize','onlyMiss'].forEach(id=>$(id).addEventListener('change',()=>{limit=60;render()}));
+['view','sort','status','minSize','onlyMiss'].forEach(id=>$(id).addEventListener('change',()=>{limit=60;render()}));
 $('moreBtn').addEventListener('click',()=>{limit+=100;render()});
 
 function msg(text,kind){const m=$('msg');m.textContent=text;m.className='msg '+(kind||'')}

@@ -6,6 +6,8 @@ Un classeur en ligne pour suivre sa collection [Kyara](https://kyara.games) albu
 - Cases à cocher pour chaque carte, enregistrées dans ton navigateur
 - Tri par cartes manquantes, taille de l'album, % complété ou nom
 - Filtres par état de l'album, par taille minimale (ex. 5 cartes et plus), par rareté, et « cartes manquantes seulement »
+- Filtre par rareté appliqué aux albums : n'affiche que les albums où il manque des cartes de ces raretés, avec les compteurs correspondants
+- Vue « Toutes les cartes » : toutes les cartes dans une seule grille, sans les albums (pratique avec le filtre de rareté et « cartes manquantes seulement »)
 - Recherche par album ou par personnage
 - Import de ta collection Kyara en un clic
 
